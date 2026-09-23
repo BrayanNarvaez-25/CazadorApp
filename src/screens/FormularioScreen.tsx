@@ -3,6 +3,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -18,6 +19,16 @@ import type { RootStackParamList } from '../../App';
 type Props = NativeStackScreenProps<RootStackParamList, 'Formulario'>;
 
 const MAX_ESTRELLAS = 10;
+
+const COLORES = {
+  fondo: '#FAF6F0',
+  superficie: '#FFFFFF',
+  primario: '#C0714B',
+  estrella: '#D9A441',
+  texto: '#3D2F26',
+  textoSuave: '#8A7767',
+  borde: '#E3D6C6',
+};
 
 // Fecha actual en formato dd/mm/aaaa
 const fechaHoy = (): string => {
@@ -132,46 +143,189 @@ export default function FormularioScreen({ navigation, route }: Props) {
   };
 
   return (
-    <ScrollView>
+    <ScrollView
+      style={styles.contenedor}
+      contentContainerStyle={styles.contenido}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* Título */}
+      <Text style={styles.etiqueta}>Título</Text>
       <TextInput
-        placeholder="Título"
+        style={styles.input}
+        placeholder="Nombre del lugar o platillo"
+        placeholderTextColor={COLORES.textoSuave}
         value={titulo}
         onChangeText={setTitulo}
       />
 
-      {/* 10 estrellas tocables */}
-      <View style={{ flexDirection: 'row' }}>
-        {Array.from({ length: MAX_ESTRELLAS }, (_, i) => (
-          <TouchableOpacity key={i} onPress={() => setCalificacion(i + 1)}>
-            <Ionicons
-              name={i < calificacion ? 'star' : 'star-outline'}
-              size={28}
-            />
-          </TouchableOpacity>
-        ))}
+      {/* Calificación: 10 estrellas tocables */}
+      <Text style={styles.etiqueta}>Calificación</Text>
+      <View style={styles.estrellasCaja}>
+        <View style={styles.estrellasFila}>
+          {Array.from({ length: MAX_ESTRELLAS }, (_, i) => (
+            <TouchableOpacity key={i} onPress={() => setCalificacion(i + 1)}>
+              <Ionicons
+                name={i < calificacion ? 'star' : 'star-outline'}
+                size={28}
+                color={COLORES.estrella}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={styles.calificacionTexto}>
+          {calificacion}/{MAX_ESTRELLAS}
+        </Text>
       </View>
-      <Text>{calificacion}/{MAX_ESTRELLAS}</Text>
 
+      {/* Comentarios */}
+      <Text style={styles.etiqueta}>Comentarios</Text>
       <TextInput
-        placeholder="Comentarios"
+        style={[styles.input, styles.inputMultilinea]}
+        placeholder="¿Qué tal estuvo?"
+        placeholderTextColor={COLORES.textoSuave}
         value={comentarios}
         onChangeText={setComentarios}
         multiline
       />
 
-      {fotoBase64 !== '' && (
-        <Image
-          source={{ uri: `data:image/jpeg;base64,${fotoBase64}` }}
-          style={{ width: '100%', height: 200 }}
-        />
-      )}
-      <TouchableOpacity onPress={seleccionarFoto}>
-        <Ionicons name="camera" size={32} />
+      {/* Foto */}
+      <Text style={styles.etiqueta}>Foto</Text>
+      <TouchableOpacity
+        style={styles.fotoCaja}
+        onPress={seleccionarFoto}
+        activeOpacity={0.8}
+      >
+        {fotoBase64 !== '' ? (
+          <>
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${fotoBase64}` }}
+              style={styles.foto}
+            />
+            <View style={styles.fotoBadge}>
+              <Ionicons name="camera" size={20} color="#FFFFFF" />
+            </View>
+          </>
+        ) : (
+          <View style={styles.fotoVacia}>
+            <Ionicons name="camera-outline" size={40} color={COLORES.primario} />
+          </View>
+        )}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={guardar} disabled={guardando}>
-        <Ionicons name="checkmark-circle" size={48} />
+      {/* Guardar */}
+      <TouchableOpacity
+        style={[styles.botonGuardar, guardando && styles.botonDeshabilitado]}
+        onPress={guardar}
+        disabled={guardando}
+      >
+        <Ionicons name="checkmark" size={32} color="#FFFFFF" />
       </TouchableOpacity>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  contenedor: {
+    flex: 1,
+    backgroundColor: COLORES.fondo,
+  },
+  contenido: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  etiqueta: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    color: COLORES.textoSuave,
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: COLORES.superficie,
+    borderWidth: 1,
+    borderColor: COLORES.borde,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: COLORES.texto,
+  },
+  inputMultilinea: {
+    minHeight: 110,
+    textAlignVertical: 'top',
+  },
+
+  // Estrellas
+  estrellasCaja: {
+    backgroundColor: COLORES.superficie,
+    borderWidth: 1,
+    borderColor: COLORES.borde,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  estrellasFila: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  calificacionTexto: {
+    marginTop: 6,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORES.texto,
+  },
+
+  // Foto
+  fotoCaja: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  foto: {
+    width: '100%',
+    height: '100%',
+  },
+  fotoVacia: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORES.superficie,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: COLORES.borde,
+    borderRadius: 12,
+  },
+  fotoBadge: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORES.primario,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Botón guardar
+  botonGuardar: {
+    marginTop: 28,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: COLORES.primario,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  botonDeshabilitado: {
+    opacity: 0.6,
+  },
+});
